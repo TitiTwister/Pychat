@@ -10,7 +10,7 @@ print("Connection on with server")
 
 out_message = ""
 
-while out_message != "fin":
+while out_message != "over":
     out_message = raw_input("> ")
     
     out_message = out_message.encode()
@@ -19,6 +19,6 @@ while out_message != "fin":
     in_message = main_connection.recv(1024)
     print(in_message.decode())
 
-print("main connection closing")
+print("Closing connection")
 main_connection.close()
                         
