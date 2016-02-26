@@ -1,4 +1,6 @@
 import socket
+import signal
+import sys
 
 host = 'localhost'
 port = 12800
@@ -8,17 +10,20 @@ main_connection.connect((host,port))
 
 print("Connection on with server")
 
-out_message = ""
+out_message = " "
 
 while out_message != "over":
-    out_message = raw_input("> ")
-    
-    out_message = out_message.encode()
-    
-    main_connection.send(out_message)
-    in_message = main_connection.recv(1024)
-    print(in_message.decode())
-
+    try:
+        out_message = raw_input("> ")
+        main_connection.send(out_message.encode())
+        in_message = main_connection.recv(1024)
+        print(in_message.decode())
+        
+    except KeyboardInterrupt:
+        out_message = "over"
+        main_connection.send(out_message.encode())
+        raise
+        
 print("Closing connection")
 main_connection.close()
                         

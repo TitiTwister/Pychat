@@ -47,19 +47,17 @@ class User():
     
     
     def check_login(self, login):
-        print("FUNCTION CHECK LOGIN USER CLASS")
+        
         users_csv = csv.DictReader(open('users.csv', 'r'))
         exist = False
         for row in users_csv:
             if row['login']==login :
                 self.login = login
-                print(type(login))
                 exist=True
         return exist
     
     def check_password(self, password):
         
-        print(type(self.login))
         users_csv = csv.DictReader(open('users.csv', 'r'))
         for row in users_csv:
             if row['login'] == self.login and row['password'] == password :
