@@ -2,32 +2,33 @@ import SocketServer, socket
 import logging
 import sys 
 import users
-
+import threading
 logging.basicConfig(level=logging.DEBUG, format='%(name)s: %(message)s',)
 
 class Chat_Handler(SocketServer.BaseRequestHandler):
     
     def __init__(self, request, client_address, server):
-        self.logger = logging.getLogger('Chat_Handler')
-        self.logger.debug('__init__ handler')
+        self.logger = logging.getLogger('Chat')
         self.user = users.User()
         SocketServer.BaseRequestHandler.__init__(self, request, client_address, server)
         return
     
     def handle(self):
-        self.logger.debug('handle')
-        self.logger.debug(self.client_address[0])
-        self.sign_in()
-        data = " "
-        while data != "over" :
-            
-            data = self.request.recv(1024).decode()
-            self.logger.debug('recv()->"%s"', data)
-            self.request.send(data)
+        self.logger.debug('Connection from : %s', self.client_address)
+        if not self.sign_in() :
+            print("not")
+            return
+        
+        print('in handle')
+        in_message = " "
+        while in_message != "over" :
+            in_message = self.request.recv(1024).decode()
+            self.logger.debug('recv()->"%s"', in_message)
+            self.request.send("vu")
         return
 
     def finish(self):    
-        self.logger.debug('finish handler with : %s'%self.client_address[0])
+        self.logger.debug('Connection stopped with : %s'%self.client_address[0])
         return SocketServer.BaseRequestHandler.finish(self)
 
     def sign_in(self):
@@ -35,15 +36,16 @@ class Chat_Handler(SocketServer.BaseRequestHandler):
         login = self.request.recv(1024)
         if not self.user.check_login(login) :
             self.request.send("I don't know you")
-            self.finish()
+            return False
         
         self.request.send("password ?")
         password = self.request.recv(1024)
         if not self.user.check_password(password) :
             self.request.send("Wrong password m**********")
-            self.finish()
+            return False
         
         self.request.send("Welcome !")
+        return True
 
 class Chat_server(SocketServer.TCPServer):
     
@@ -59,16 +61,19 @@ class Chat_server(SocketServer.TCPServer):
         return
     
     
-    
 if __name__ == '__main__':
-
-    address = ('localhost', 12800) # let the kernel give us a port
+    
+    address = ('', 12800)
     server = Chat_server(address, Chat_Handler)
-    server.serve_forever()
-    ip, port = server.server_address # find out what port we were given
+    
+    ip, port = server.server_address 
     logger = logging.getLogger('server')
-    logger.info('Server on %s:%s', ip, port)
-
+    logger.info('Server listen on %s:%s', ip, port)
+    server.serve_forever()
+    
+    t = threading.Thread(target=server)
+    t.setDaemon(True) # don't hang on exit
+    t.start()
 
 
 """

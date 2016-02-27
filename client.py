@@ -2,15 +2,16 @@ import socket
 import signal
 import sys
 
-host = 'localhost'
+host = '127.0.0.1'
 port = 12800
 
 main_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 main_connection.connect((host,port))
-
 print("Connection on with server")
+print(main_connection.recv(1024)) #to recv login prompt 
 
 out_message = " "
+
 
 while out_message != "over":
     try:
@@ -25,5 +26,4 @@ while out_message != "over":
         raise
         
 print("Closing connection")
-main_connection.close()
-                        
+main_connection.close()       
