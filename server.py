@@ -3,6 +3,7 @@ import logging
 import sys 
 import users
 import threading
+
 logging.basicConfig(level=logging.DEBUG, format='%(name)s: %(message)s',)
 
 class Chat_Handler(SocketServer.BaseRequestHandler):
@@ -16,14 +17,12 @@ class Chat_Handler(SocketServer.BaseRequestHandler):
     def handle(self):
         self.logger.debug('Connection from : %s', self.client_address)
         if not self.sign_in() :
-            print("not")
             return
-        
-        print('in handle')
+
         in_message = " "
         while in_message != "over" :
             in_message = self.request.recv(1024).decode()
-            self.logger.debug('recv()->"%s"', in_message)
+            self.logger.debug('%s -> "%s"',self.client_address[0], in_message)
             self.request.send("vu")
         return
 
@@ -59,22 +58,19 @@ class Chat_server(SocketServer.TCPServer):
         self.logger.debug('server_activate')
         SocketServer.TCPServer.server_activate(self)
         return
-    
+   
+class Chat_thread_server(SocketServer.ThreadingMixIn, Chat_server): 
+    pass
     
 if __name__ == '__main__':
     
     address = ('', 12800)
-    server = Chat_server(address, Chat_Handler)
-    
+    server = Chat_thread_server(address, Chat_Handler)
+    server.serve_forever()
     ip, port = server.server_address 
     logger = logging.getLogger('server')
     logger.info('Server listen on %s:%s', ip, port)
-    server.serve_forever()
     
-    t = threading.Thread(target=server)
-    t.setDaemon(True) # don't hang on exit
-    t.start()
-
 
 """
 USER CONNECTION
